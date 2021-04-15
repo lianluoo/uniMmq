@@ -44,24 +44,25 @@
     },
     mounted() {
       _this = this;
-      //this.isLogin();
+      this.isLogin();
     },
     methods: {
       isLogin() {
         //判断缓存中是否登录过，直接登录
-        // try {
-        // 	const value = uni.getStorageSync('setUserData');
-        // 	if (value) {
-        // 		//有登录信息
-        // 		console.log("已登录用户：",value);
-        // 		_this.$store.dispatch("setUserData",value); //存入状态
-        // 		uni.reLaunch({
-        // 			url: '../../../pages/index',
-        // 		});
-        // 	}
-        // } catch (e) {
-        // 	// error
-        // }
+        try {
+        	const value = uni.getStorageSync('userData');
+        	if (value) {
+        		//有登录信息
+        		console.log("已登录用户：", value);
+        		// _this.$store.dispatch("userData", value); //存入状态
+        		uni.reLaunch({
+        			url: '../index/index',
+        		});
+        	}
+        } catch (e) {
+        	// error
+			console.log(e);
+        }
       },
       startLogin(e) {
         console.log(e)
@@ -95,27 +96,30 @@
         	title: '登录中'
         });
         uni.request({
-          url: 'https://www.example.com/request', //仅为示例，并非真实接口地址。
+          url: 'http://118.190.140.13/user/login', //仅为示例，并非真实接口地址。
           data: {
-              text: 'uni.request'
+              userName: _this.phoneData,
+			  passwd: _this.passData,
           },
+		  method: 'POST',
           header: {
-              'custom-header': 'hello' //自定义请求头信息
+              'Content-Type': 'application/json' //自定义请求头信息
           },
 
         })
         .then(res => {
-        	//console.log(res)
+        	console.log(res)
         	//简单验证下登录（不安全）
-        	if(_this.phoneData==res.data.username && _this.passData==res.data.password){
+        	if(res[1].data.code == 0){
+				
         		let userdata={
-        			"username":res.data.username,
-        			"nickname":res.data.nickname,
-        			"accesstoken":res.data.accesstoken,
+        			userName: _this.phoneData,
+					token: res[1].data.data.token,
+					
         		} //保存用户信息和accesstoken
-        		_this.$store.dispatch("setUserData",userdata); //存入状态
+        		// _this.$store.dispatch("userData", userdata); //存入状态
         		try {
-        			uni.setStorageSync('setUserData', userdata); //存入缓存
+        			uni.setStorageSync('userData', userdata); //存入缓存
         		} catch (e) {
         			// error
         		}
@@ -125,14 +129,15 @@
         			title: '登录成功'
         		});
         		uni.reLaunch({
-        			url: '../../../pages/index',
+        			url: '../index/index',
         		});
+				_this.isRotate = false;
         	}else{
         		_this.passData=""
         		uni.showToast({
         			icon: 'error',
         			position: 'bottom',
-        			title: '账号或密码错误，账号admin密码admin'
+        			title: '账号或密码错误'
         		});
         	}
         	uni.hideLoading();

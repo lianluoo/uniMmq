@@ -154,6 +154,51 @@
 				setTimeout(function(){
 					_this.isRotate=false
 				},3000)
+				
+				uni.request({
+					url: 'http://118.190.140.13/user/reg',
+					data: {
+						userName: this.phoneData,
+						passwd: this.passData,
+					},
+					method: 'POST',
+					header: {
+						'Content-Type': 'application/json',
+					}
+				}).then(res => {
+					console.log(res)
+					// 验证
+					if (res[1].data.code == 0){
+						
+						// 缓存
+							
+						let userData = {
+							userName: this.phoneData,
+							token: res[1].data.data.token,
+						}
+						// _this.$store.dispatch('userData', userData);
+						try {
+							uni.setStorageSync('userData', userData);
+						} catch (e){
+							concole.log(e);
+						}
+						
+						uni.showToast({
+							icon: 'success',
+							position: 'bottom',
+							title: '注册成功'
+						})
+						_this.isRotate = false;
+						
+					}else {
+						uni.showToast({
+							icon: 'error',
+							position: 'bottom',
+							title: '注册失败'
+						})
+					}
+				})
+				
 		    }
 		}
 	}
